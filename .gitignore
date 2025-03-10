@@ -1,0 +1,8 @@
+ext/*
+venv/
+.clangd
+app/build/
+app/modm
+app/.sconsign.dblite
+app/project.xml.log
+app/SConstruct
