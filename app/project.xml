@@ -7,6 +7,7 @@
   </extends>
   <options>
     <option name="modm:build:project.name">EGO</option>
+    <option name="modm:build:scons:include_sconstruct">False</option>
   </options>
   <modules>
     <module>modm:build:scons</module>
