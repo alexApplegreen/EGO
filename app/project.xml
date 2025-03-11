@@ -12,6 +12,7 @@
   </options>
   <modules>
     <module>modm:build:scons</module>
+    <module>modm:platform:gpio</module>
     <module>modm:docs</module>
     <module>modm:io</module>
   </modules>

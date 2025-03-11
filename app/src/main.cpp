@@ -1,3 +1,4 @@
+#include <modm/architecture/interface/clock.hpp>
 #include <modm/board.hpp>
 #include <modm/board/board.hpp>
 #include <modm/debug/logger/logger.hpp>
@@ -16,17 +17,37 @@ bool offTimerActivated = false;
 
 float calculateDistance(float time)
 {
-    return (time * 0.0343) / 2; // distance in m
+    float result = (time * 0.0343) / 2; // distance in m
+    return result;
 }
 
 float avg(float* samples)
 {
     unsigned long sum = 0;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < ARR_LEN; i++)
     {
         sum += samples[i];
     }
-    return sum / 5;
+    return sum / float(ARR_LEN);
+}
+
+float pulseIn()
+{
+    modm::Clock::time_point start = modm::Clock::now();
+    modm::Clock::time_point end;
+
+    while(true)
+    {
+        bool res = A1::read();
+        if (!res)
+        {
+            // falling edge
+            end = modm::Clock::now();
+            break;
+        }
+    }
+    float result = (end - start).count();
+    return result;
 }
 
 /**
@@ -34,15 +55,14 @@ float avg(float* samples)
  */
 float measureDistance()
 {
-    A0::set(0);
+    // TODO are these actually being set?
+    A0::set(false);
     modm::delay(2us);
-    A0::set(1);
+    A0::set(true);
     modm::delay(10us);
-    A0::set(0);
+    A0::set(false);
 
-    // TODO implement PulseIn function
-    // float duration = pulseIn(PIN_A1, HIGH);
-    float duration = 0;
+    float duration = pulseIn();
     return calculateDistance(duration);
 }
 
@@ -63,23 +83,23 @@ void setup()
     A4::setOutput(); // GREEN
     A5::setOutput(); // BLUE
 
-    A3::set(0);
-    A4::set(0);
-    A5::set(0);
+    A3::set(false);
+    A4::set(false);
+    A5::set(false);
 }
 
 void turnOnLed()
 {
-    LedD13::set(1);
-    A3::set(1);
+    LedD13::set(true);
+    A3::set(true);
 }
 
 void turnOffLed()
 {
-    LedD13::set(0);
-    A3::set(0);
-    A4::set(0);
-    A5::set(0);
+    LedD13::set(false);
+    A3::set(false);
+    A4::set(false);
+    A5::set(false);
 }
 
 int main()
@@ -96,10 +116,8 @@ int main()
 
         if (counter == ARR_LEN)
         {
-            // Arduino
             distanceAvg = avg(measurements);
 
-            // modm
             MODM_LOG_INFO << "Distance: " << distanceAvg << " cm" << modm::endl;
 
             if (distanceAvg < BOX_WIDTH)
