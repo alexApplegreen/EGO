@@ -1,7 +1,12 @@
 #include <modm/board.hpp>
 
+#include <stddef.h>
+#include <chrono>
+
 #define ARR_LEN 5
 #define BOX_WIDTH 150 // Raiser Dimension in centimeters
+
+using namespace std::chrono_literals;
 
 float measurements[ARR_LEN];
 size_t counter = 0;
@@ -28,9 +33,11 @@ float avg(float* samples)
 float measureDistance()
 {
     digitalWrite(PIN_A0, LOW);
-    delayMicroseconds(2);
+    modm::delay(2us);
+    // delayMicroseconds(2);
     digitalWrite(PIN_A0, HIGH);
-    delayMicroseconds(10);
+    modm::delay(10us);
+    // delayMicroseconds(10);
     digitalWrite(PIN_A0, LOW);
 
     float duration = pulseIn(PIN_A1, HIGH);
