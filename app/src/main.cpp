@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <chrono>
 
-#define ARR_LEN 5
+#define ARR_LEN 5 // iterations to intergate when measuring
 #define BOX_WIDTH 150 // Raiser Dimension in centimeters
 
 float measurements[ARR_LEN];
@@ -44,14 +44,6 @@ float measureDistance()
     // float duration = pulseIn(PIN_A1, HIGH);
     float duration = 0;
     return calculateDistance(duration);
-}
-
-void blink(uint64_t delayMs)
-{
-    LedD13::set(1);
-    modm::delay_ms(delayMs);
-    LedD13::set(0);
-    modm::delay_ms(delayMs);
 }
 
 void setup()
