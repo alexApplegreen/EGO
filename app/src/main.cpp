@@ -1,9 +1,9 @@
 #include <modm/board.hpp>
-
 #include <modm/board/board.hpp>
 #include <modm/debug/logger/logger.hpp>
 #include <modm/io/iostream.hpp>
 #include <modm/platform/core/delay_impl.hpp>
+
 #include <stddef.h>
 #include <chrono>
 
@@ -41,7 +41,8 @@ float measureDistance()
     A0::set(0);
 
     // TODO implement PulseIn function
-    float duration = pulseIn(PIN_A1, HIGH);
+    // float duration = pulseIn(PIN_A1, HIGH);
+    float duration = 0;
     return calculateDistance(duration);
 }
 
