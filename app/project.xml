@@ -8,9 +8,12 @@
   <options>
     <option name="modm:build:project.name">EGO</option>
     <option name="modm:build:scons:include_sconstruct">False</option>
+    <option name="modm:io:with_float">yes</option>
+    <option name="modm:io:with_printf">yes</option>
   </options>
   <modules>
     <module>modm:build:scons</module>
     <module>modm:docs</module>
+    <module>modm:io</module>
   </modules>
 </library>

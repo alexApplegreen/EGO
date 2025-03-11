@@ -1,12 +1,14 @@
 #include <modm/board.hpp>
 
+#include <modm/board/board.hpp>
+#include <modm/debug/logger/logger.hpp>
+#include <modm/io/iostream.hpp>
+#include <modm/platform/core/delay_impl.hpp>
 #include <stddef.h>
 #include <chrono>
 
 #define ARR_LEN 5
 #define BOX_WIDTH 150 // Raiser Dimension in centimeters
-
-using namespace std::chrono_literals;
 
 float measurements[ARR_LEN];
 size_t counter = 0;
@@ -32,90 +34,92 @@ float avg(float* samples)
  */
 float measureDistance()
 {
-    digitalWrite(PIN_A0, LOW);
+    A0::set(0);
     modm::delay(2us);
-    // delayMicroseconds(2);
-    digitalWrite(PIN_A0, HIGH);
+    A0::set(1);
     modm::delay(10us);
-    // delayMicroseconds(10);
-    digitalWrite(PIN_A0, LOW);
+    A0::set(0);
 
+    // TODO implement PulseIn function
     float duration = pulseIn(PIN_A1, HIGH);
     return calculateDistance(duration);
 }
 
 void blink(uint64_t delayMs)
 {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(delayMs);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(delayMs);
+    LedD13::set(1);
+    modm::delay_ms(delayMs);
+    LedD13::set(0);
+    modm::delay_ms(delayMs);
 }
 
 void setup()
 {
+    LedD13::setOutput();
+
     // ------------------------------------------------------------------------
     // HC SR04
     // ------------------------------------------------------------------------
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(PIN_A0, OUTPUT);
-    pinMode(PIN_A1, INPUT);
+    A0::setOutput();
+    A1::setInput();
 
     // ------------------------------------------------------------------------
     // MOSFETS
     // ------------------------------------------------------------------------
-    pinMode(PIN_A3, OUTPUT); // RED
-    pinMode(PIN_A4, OUTPUT); // GREEN
-    pinMode(PIN_A5, OUTPUT); // BLUE
+    A3::setOutput(); // RED
+    A4::setOutput(); // GREEN
+    A5::setOutput(); // BLUE
 
-    digitalWrite(PIN_A3, LOW);
-    digitalWrite(PIN_A4, LOW);
-    digitalWrite(PIN_A5, LOW);
-
-    // Serial USB
-    Serial.begin(9600);
+    A3::set(0);
+    A4::set(0);
+    A5::set(0);
 }
 
 void turnOnLed()
 {
-    digitalWrite(LED_BUILTIN, HIGH);
-    digitalWrite(PIN_A3, HIGH);
-    // digitalWrite(PIN_A4, HIGH);
-    // digitalWrite(PIN_A5, HIGH);
+    LedD13::set(1);
+    A3::set(1);
 }
 
 void turnOffLed()
 {
-    digitalWrite(LED_BUILTIN, LOW);
-    digitalWrite(PIN_A3, LOW);
-    digitalWrite(PIN_A4, LOW);
-    digitalWrite(PIN_A5, LOW);
+    LedD13::set(0);
+    A3::set(0);
+    A4::set(0);
+    A5::set(0);
 }
 
-void loop()
+int main()
 {
+    Board::initialize();
+    setup();
+
     float distanceAvg;
 
-    measurements[counter] = measureDistance();
-    counter++;
-
-    if (counter == ARR_LEN)
+    while (true)
     {
-        distanceAvg = avg(measurements);
-        Serial.print("Distance: ");
-        Serial.print(distanceAvg);
-        Serial.println(" cm");
+        measurements[counter] = measureDistance();
+        counter++;
 
-        if (distanceAvg < BOX_WIDTH)
+        if (counter == ARR_LEN)
         {
-            turnOnLed();
+            // Arduino
+            distanceAvg = avg(measurements);
+
+            // modm
+            MODM_LOG_INFO << "Distance: " << distanceAvg << " cm" << modm::endl;
+
+            if (distanceAvg < BOX_WIDTH)
+            {
+                turnOnLed();
+            }
+            else
+            {
+                turnOffLed();
+            }
+            counter = 0;
         }
-        else
-        {
-            turnOffLed();
-        }
-        counter = 0;
+
+        modm::delay(61us);
     }
-
-    delay(61);
 }
